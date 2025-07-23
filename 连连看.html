@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>连连看 - 10 关挑战</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f0f8ff;
+    margin: 0;
+    padding: 10px;
+  }
+  h1 { font-size: 22px; margin: 10px 0; }
+  .info { font-size: 16px; margin: 5px 0; }
+  .game-board {
+    display: grid;
+    gap: 6px;
+    max-width: 95%;
+    margin: 10px auto;
+  }
+  .card {
+    background: #fff;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s ease;
+  }
+  .hidden {
+    color: transparent;
+    background: #87ceeb;
+  }
+  button {
+    margin-top: 10px;
+    padding: 10px 18px;
+    font-size: 16px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #shuffleBtn { background: #ff5722; margin-left: 10px; }
+  .overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    font-size: 20px;
+    z-index: 10;
+    display: none;
+  }
+  .overlay button {
+    margin-top: 20px;
+    background: #ff9800;
+  }
+</style>
+</head>
+<body>
+
+<h1>连连看 - 10 关挑战</h1>
+<div class="info">关卡：<span id="level">1</span> | 分数：<span id="score">0</span> | 金币：<span id="coins">0</span></div>
+<div class="game-board" id="board"></div>
+<div>
+  <button id="restartBtn">重新开始</button>
+  <button id="shuffleBtn">打乱(剩余1次)</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div id="message"></div>
+  <button id="nextBtn">下一关</button>
+</div>
+
+<script>
+  const board = document.getElementById('board');
+  const levelSpan = document.getElementById('level');
+  const scoreSpan = document.getElementById('score');
+  const coinsSpan = document.getElementById('coins');
+  const overlay = document.getElementById('overlay');
+  const message = document.getElementById('message');
+  const nextBtn = document.getElementById('nextBtn');
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  
+  const icons = ['🍎','🍌','🍓','🍒','🍇','🍉','🍑','🥝','🍍','🍋','🍈','🥭','🥥','🍐','🍊','🍅','🍆','🥕','🌽','🥔',
+                 '🐶','🐱','🐼','🐷','🐸','🐵','🐤','🐟','🦋','🦄'];
+  
+  let level = 1;
+  let score = 0;
+  let coins = 0;
+  let firstCard = null;
+  let secondCard = null;
+  let shuffleCount = 1;
+  
+  const gridConfigs = [
+    {rows:5, cols:4}, {rows:5, cols:6}, {rows:6, cols:6}, {rows:6, cols:7},
+    {rows:6, cols:8}, {rows:7, cols:8}, {rows:8, cols:8}, {rows:8, cols:8},
+    {rows:8, cols:8}, {rows:8, cols:8}
+  ];
+  const rewards = [50,60,70,80,90,100,110,120,130,150];
+  
+  function initGame() {
+    board.innerHTML = '';
+    overlay.style.display = 'none';
+    shuffleCount = 1;
+    shuffleBtn.textContent = `打乱(剩余${shuffleCount}次)`;
+    
+    const config = gridConfigs[level-1];
+    const size = config.rows * config.cols;
+    board.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+    
+    let pairs = size / 2;
+    let gameIcons = icons.slice(0, pairs);
+    gameIcons = [...gameIcons, ...gameIcons];
+    gameIcons.sort(() => Math.random() - 0.5);
+    
+    gameIcons.forEach(icon => {
+      const card = document.createElement('div');
+      card.className = 'card hidden';
+      card.textContent = icon;
+      card.addEventListener('click', () => flipCard(card));
+      board.appendChild(card);
+    });
+    
+    firstCard = null;
+    secondCard = null;
+  }
+  
+  function flipCard(card) {
+    if (!card.classList.contains('hidden') || secondCard) return;
+    card.classList.remove('hidden');
+    card.style.transform = 'scale(1.1)';
+    setTimeout(() => card.style.transform = 'scale(1)', 200);
+    
+    if (!firstCard) {
+      firstCard = card;
+    } else {
+      secondCard = card;
+      if (firstCard.textContent === secondCard.textContent) {
+        score += 10;
+        scoreSpan.textContent = score;
+        firstCard = null;
+        secondCard = null;
+        checkWin();
+      } else {
+        setTimeout(() => {
+          firstCard.classList.add('hidden');
+          secondCard.classList.add('hidden');
+          firstCard = null;
+          secondCard = null;
+        }, 600);
+      }
+    }
+  }
+  
+  function checkWin() {
+    const hiddenCards = document.querySelectorAll('.card.hidden');
+    if (hiddenCards.length === 0) {
+      coins += rewards[level-1];
+      coinsSpan.textContent = coins;
+      message.textContent = `恭喜过关！获得 ${rewards[level-1]} 金币`;
+      overlay.style.display = 'flex';
+    }
+  }
+  
+  function shuffleBoard() {
+    if (shuffleCount <= 0) return;
+    shuffleCount--;
+    shuffleBtn.textContent = `打乱(剩余${shuffleCount}次)`;
+    
+    const cards = Array.from(board.children).filter(c => c.classList.contains('hidden'));
+    const iconsArr = cards.map(c => c.textContent);
+    iconsArr.sort(() => Math.random() - 0.5);
+    
+    cards.forEach((card, i) => {
+      card.textContent = iconsArr[i];
+    });
+  }
+  
+  shuffleBtn.addEventListener('click', shuffleBoard);
+  
+  nextBtn.addEventListener('click', () => {
+    level++;
+    if (level > 10) {
+      message.textContent = `恭喜完成所有关卡！总金币：${coins}`;
+      nextBtn.style.display = 'none';
+    } else {
+      levelSpan.textContent = level;
+      initGame();
+    }
+  });
+  
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    level = 1;
+    score = 0;
+    coins = 0;
+    levelSpan.textContent = level;
+    scoreSpan.textContent = score;
+    coinsSpan.textContent = coins;
+    nextBtn.style.display = 'inline-block';
+    initGame();
+  });
+  
+  initGame();
+</script>
+
+</body>
+</html>
