@@ -1,219 +1,174 @@
-<!DOCTYPE html>
-<html lang="zh">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>连连看 - 10 关挑战</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#181315">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>双人 · 微醺游戏</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f0f8ff;
-    margin: 0;
-    padding: 10px;
-  }
-  h1 { font-size: 22px; margin: 10px 0; }
-  .info { font-size: 16px; margin: 5px 0; }
-  .game-board {
-    display: grid;
-    gap: 6px;
-    max-width: 95%;
-    margin: 10px auto;
-  }
-  .card {
-    background: #fff;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 28px;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.3s ease;
-  }
-  .hidden {
-    color: transparent;
-    background: #87ceeb;
-  }
-  button {
-    margin-top: 10px;
-    padding: 10px 18px;
-    font-size: 16px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  #shuffleBtn { background: #ff5722; margin-left: 10px; }
-  .overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: white;
-    font-size: 20px;
-    z-index: 10;
-    display: none;
-  }
-  .overlay button {
-    margin-top: 20px;
-    background: #ff9800;
-  }
+:root{color-scheme:dark;--bg:#181315;--panel:#251e20;--line:rgba(231,207,189,.13);--text:#f0e4d8;--muted:#b4a39d;--gold:#dcc4a0;--wine:#69444d;--rose:#d6a9ac;--ease:cubic-bezier(.2,.7,.2,1)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{min-height:100%;background:var(--bg);-webkit-text-size-adjust:100%;scrollbar-gutter:stable}body{margin:0;min-width:0;color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:radial-gradient(ellipse at 50% 12%,#302026 0,transparent 54%),var(--bg);overflow-wrap:anywhere}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;min-width:0;min-height:44px;border:0;background:none;padding:0;transition:transform 150ms,background 180ms,opacity 180ms}button:active:not(:disabled){transform:scale(.98)}button:focus-visible{outline:2px solid var(--gold);outline-offset:4px}button:disabled{cursor:default;opacity:.43}svg{display:block;max-width:100%}[hidden]{display:none!important}h1,h2,h3,p{margin:0}button,span,p{word-break:normal}button svg{pointer-events:none}.app{width:min(100%,480px);margin:auto;min-height:100vh;min-height:100dvh;padding:max(8px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}.topbar{display:grid;grid-template-columns:minmax(70px,1fr) auto minmax(44px,1fr);gap:6px;align-items:center;min-height:46px}.round{font-size:12px;color:var(--muted);white-space:nowrap}.round strong{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text);margin-right:5px}.privacy{font-size:10px;letter-spacing:.4px;color:#a99a96}.icon-button{width:44px;aspect-ratio:1;display:grid;place-items:center;justify-self:end}.icon{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.chemistry{padding:8px 0 14px}.chem-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.chem-word{font-family:Georgia,"Times New Roman",serif;font-size:20px;font-style:italic;letter-spacing:.2px}.chem-value{font-size:10px;letter-spacing:1px;color:var(--gold);font-variant-numeric:tabular-nums}.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:1px}.level{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;font-size:12px;color:var(--muted);position:relative}.level:first-child{justify-content:flex-start}.level:last-child{justify-content:flex-end}.level[aria-pressed=true]{color:var(--gold)}.level .dot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:0}.level[aria-pressed=true] .dot{opacity:1}.lock{width:11px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5}.progress{height:3px;border-radius:5px;background:#3a2d31;overflow:hidden}.progress-fill{height:100%;width:100%;background:linear-gradient(90deg,#826269,var(--gold));transform:scaleX(0);transform-origin:left;transition:transform 400ms var(--ease)}.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tab{min-height:66px;border:1px solid var(--line);background:rgba(37,30,32,.75);border-radius:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--muted)}.tab[aria-selected=true]{background:#473038;border-color:#88636b;color:#f1ddd0;box-shadow:inset 0 1px 0 #ffffff0a}.tab .icon{width:22px;height:22px}.game{padding-top:12px;min-width:0}.pane{animation:appear 200ms var(--ease);min-height:clamp(475px,61dvh,590px);display:flex;flex-direction:column;align-items:center;gap:12px}.mode-meta{width:100%;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:10px;letter-spacing:.7px;min-height:18px}.mode-meta b{font-weight:400;color:var(--gold)}.wheel-shell{width:min(82vw,350px);max-width:100%;aspect-ratio:1;position:relative;display:grid;place-items:center;flex:none;border-radius:50%;box-shadow:0 14px 36px #0005}.wheel-shell:after{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid #d6bda24a;box-shadow:inset 0 0 0 5px #17121480;pointer-events:none}#wheelRotor{width:100%;height:100%;transform:rotate(0deg);transform-origin:50% 50%;border-radius:50%;will-change:transform}#wheelRotor svg{width:100%;height:100%;overflow:visible}.pointer{position:absolute;top:-3px;left:calc(50% - 9px);width:18px;height:25px;z-index:2;filter:drop-shadow(0 2px 2px #0008)}.spin{position:absolute;inset:40.5%;width:19%;height:19%;border-radius:50%;z-index:3;display:grid;place-items:center;background:#21191c;border:1px solid #bd9d7780;box-shadow:0 3px 10px #0006,inset 0 1px 0 #d6bda222;font-size:clamp(17px,4.5vw,21px);color:#e6cba4;font-weight:500}.spin:disabled{opacity:.7}.wheel-shell.landed{animation:land 360ms ease-out}.wheel-note{font-size:10px;color:#b0a09a;letter-spacing:1px;margin-top:-4px}.result{width:100%;min-height:112px;padding:14px 16px;border-radius:19px;background:linear-gradient(125deg,#32262a,#241d20);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:6px}.result-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.eyebrow{font-size:10px;font-weight:500;color:var(--gold);letter-spacing:1px}.result-index{font:italic 13px Georgia,serif;color:#a68c83}.result-text{font-size:clamp(15px,4.2vw,18px);line-height:1.65;white-space:pre-line}.hint{font-size:11px;line-height:1.6;color:var(--muted)}.actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px}.action{min-height:48px;border-radius:15px;border:1px solid var(--line);background:#292124;font-size:13px;font-weight:500;padding:10px 14px}.action.primary{background:var(--gold);color:#302428;border-color:transparent;box-shadow:0 4px 18px #0002}.action.full{grid-column:1/-1}.footer{display:flex;justify-content:center;align-items:center;gap:8px;padding:10px 0 0;min-height:32px;color:#a79892;font-size:10px;flex-wrap:wrap}.footer .separator{width:2px;height:2px;background:#8f7873;border-radius:50%}.tiny-button{min-height:44px;color:var(--gold);font-size:11px;padding:0 8px}.card-space{width:100%;display:grid;place-items:center;perspective:1200px;flex:1;min-height:340px}.playing-card{position:relative;width:min(65vw,calc(46dvh * .71),280px);min-width:min(230px,100%);max-width:100%;aspect-ratio:.71;touch-action:pan-x pinch-zoom;border-radius:26px;text-align:left;box-shadow:0 18px 32px #0005;background:transparent;min-height:0}.playing-card:active:not(:disabled){transform:none}.card-inner{width:100%;height:100%;transform-style:preserve-3d;transition:transform 560ms cubic-bezier(.2,.7,.25,1)}.playing-card.flipped .card-inner{transform:rotateY(180deg)}.face{position:absolute;inset:0;border-radius:26px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}.card-back{border:1px solid #a1787966;background:repeating-linear-gradient(45deg,transparent 0 12px,#be8e8710 12px 13px),#493039;display:grid;place-items:center}.card-back:before{content:"";position:absolute;inset:12px;border:1px solid #d6bda255;border-radius:17px}.back-art{width:62%;aspect-ratio:1;opacity:.85}.back-art svg{width:100%;height:100%}.back-caption{position:absolute;bottom:27px;left:16px;right:16px;text-align:center;font-size:11px;color:#dec6b9;letter-spacing:2px}.card-front{transform:rotateY(180deg);background:#ebddca;color:#382b2a;padding:clamp(18px,5vw,25px);display:flex;flex-direction:column;border:1px solid #fff5}.card-corners{display:flex;justify-content:space-between;align-items:center;gap:8px;flex:none}.suit{font:24px Georgia,serif;color:#824b52}.card-category{font-size:11px;color:#71534f}.card-copy{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(17px,4.7vw,21px);line-height:1.8;font-weight:500;padding:12px 0;white-space:pre-line}.card-bottom{border-top:1px solid #70544b30;padding-top:12px;text-align:center;color:#79635a;font-size:10px}.card-helper{font-size:11px;color:var(--muted);text-align:center;min-height:18px}.dice-space{width:100%;min-height:clamp(205px,29dvh,275px);display:flex;align-items:center;justify-content:center;gap:clamp(14px,5vw,24px);position:relative}.dice-space:after{content:"";position:absolute;bottom:28px;left:15%;right:15%;height:20px;background:#0005;border-radius:50%;filter:blur(12px);z-index:0}.die{width:min(30vw,125px);aspect-ratio:1;border-radius:24%;background:linear-gradient(145deg,#f3e7d9,#c9b4a0);border:1px solid #f2ddc5;color:#4e3838;box-shadow:inset -5px -6px 10px #6d433222,inset 2px 2px 1px #fff6,0 15px 20px #0005;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;z-index:1;padding:12px}.die.dark{background:linear-gradient(145deg,#75515b,#49323d);border-color:#916973;color:#f0dccd}.die-label{font-size:9px;letter-spacing:1px;opacity:.75}.die-value{font-size:clamp(17px,5vw,22px);font-weight:600;text-align:center}.die-pips{display:flex;gap:5px}.die-pips i{display:block;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.6}.rolling .die:first-child{animation:dice 700ms ease-in-out}.rolling .die:last-child{animation:dice 700ms ease-in-out reverse}.motion-button{font-size:11px;color:var(--muted);min-height:44px;padding:0 12px}.dice-controls{width:100%;display:flex;flex-direction:column;gap:8px;margin-top:auto}.sheet-backdrop{position:fixed;inset:0;background:#080507b8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:10;display:flex;align-items:flex-end;justify-content:center;padding-top:max(20px,env(safe-area-inset-top));animation:appear 180ms ease}.sheet{width:min(100%,480px);max-height:calc(100vh - 30px);max-height:calc(100dvh - max(24px,env(safe-area-inset-top)));overflow-y:auto;overscroll-behavior:contain;background:#241d20;border-radius:28px 28px 0 0;padding:12px max(20px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));border:1px solid var(--line);box-shadow:0 -16px 60px #0003}.handle{width:32px;height:4px;background:#655057;border-radius:4px;margin:0 auto 9px}.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.sheet-head h2{font-size:19px;font-weight:500}.sheet-section{padding:15px 0;border-top:1px solid var(--line)}.sheet-section h3{font-size:12px;font-weight:500;margin-bottom:12px;color:var(--gold)}.segmented{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;background:#191417;padding:5px;border-radius:14px;margin-bottom:10px}.segmented button{border-radius:10px;font-size:12px;padding:8px 4px}.segmented button[aria-pressed=true]{background:#63434c;color:#f5e2d2}.setting-row{display:flex;justify-content:space-between;align-items:center;gap:14px}.setting-row .hint{flex:1}.switch{flex:none;padding:8px 12px;font-size:11px;border:1px solid var(--line);border-radius:12px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.stat{padding:12px 4px;border:1px solid var(--line);border-radius:13px;text-align:center}.stat strong{display:block;font:23px Georgia,serif;color:var(--gold)}.stat span{font-size:10px;color:var(--muted)}.history{max-height:145px;overflow:auto}.history-row{font-size:11px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;padding:9px 0;border-top:1px solid var(--line);color:var(--muted)}.consent-intro{font-size:14px;line-height:1.8;margin-bottom:17px}.consent-button{width:100%;display:flex;align-items:center;gap:13px;padding:13px;margin:10px 0;border:1px solid var(--line);border-radius:16px;text-align:left;background:#2d2428}.consent-badge{display:grid;place-items:center;width:36px;aspect-ratio:1;border:1px solid #bca07e55;border-radius:50%;flex:none;font:italic 18px Georgia,serif;color:var(--gold)}.consent-button strong{font-size:13px;font-weight:500;display:block}.consent-button small{font-size:10px;color:var(--muted)}.consent-button[aria-pressed=true]{border-color:#c6aa83;background:#43343a}.consent-foot{margin:15px 0}.toast{position:fixed;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 12px));transform:translateX(-50%);width:max-content;max-width:calc(100vw - 40px);padding:11px 18px;border-radius:16px;background:#ead7c2;color:#39282e;font-size:12px;text-align:center;z-index:20;box-shadow:0 8px 30px #0006;pointer-events:none;animation:appear 200ms ease}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@keyframes appear{from{opacity:0}to{opacity:1}}@keyframes land{0%,100%{box-shadow:0 14px 36px #0005}40%{box-shadow:0 0 0 3px #dcc4a030,0 14px 36px #0005}}@keyframes dice{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-16px) rotate(-12deg)}65%{transform:translateY(-6px) rotate(11deg)}}
+@media(max-width:375px){.app{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}.tab{gap:6px;font-size:11px}.result{padding:12px 14px}.privacy{font-size:9px}.pane{gap:10px}.card-copy{font-size:18px}}
+@media(max-height:720px){.chemistry{padding-top:2px;padding-bottom:10px}.chem-word{font-size:18px}.topbar{min-height:44px}.tab{min-height:54px;border-radius:14px}.game{padding-top:10px}.pane{min-height:475px;gap:9px}.mode-meta{min-height:15px}.result{min-height:101px;padding-top:10px;padding-bottom:10px}.wheel-note{font-size:9px}.footer{padding-top:4px}.playing-card{width:min(62vw,240px)}.card-space{min-height:330px}}
+@media(min-height:721px){.pane{min-height:max(calc(min(82vw,350px) + 244px),61dvh)}.dice-space{min-height:clamp(205px,26dvh,240px)}}
+@media(max-height:720px){.chemistry{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:8px;align-items:center}.chem-head{min-height:44px}.chem-word{font-size:17px;white-space:nowrap}.chem-value{display:none}.levels{margin:0}.level{font-size:11px;justify-content:center!important;gap:3px}.progress{grid-column:1/-1}.tab{min-height:44px}.game{padding-top:8px}.pane{min-height:calc(min(82vw,350px) + 145px);gap:8px}.mode-meta,.wheel-note{display:none}.result{min-height:82px;padding:8px 14px;gap:4px}.result-text{font-size:15px;line-height:1.6}.action{min-height:44px;padding:9px 12px}.footer{min-height:24px;padding-top:4px;font-size:9px}.card-space{min-height:330px}.dice-space{min-height:190px}.dice-controls{gap:8px}.motion-button{min-height:44px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:1ms!important;transition-duration:1ms!important}.card-inner{transition:none!important}#wheelRotor{will-change:auto}}
 </style>
 </head>
 <body>
-
-<h1>连连看 - 10 关挑战</h1>
-<div class="info">关卡：<span id="level">1</span> | 分数：<span id="score">0</span> | 金币：<span id="coins">0</span></div>
-<div class="game-board" id="board"></div>
-<div>
-  <button id="restartBtn">重新开始</button>
-  <button id="shuffleBtn">打乱(剩余1次)</button>
+<svg aria-hidden="true" width="0" height="0" style="position:absolute"><defs>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="#211a1d"/><circle cx="16" cy="17" r="3" fill="#211a1d"/></symbol>
+<symbol id="i-cards" viewBox="0 0 24 24"><rect x="8" y="3" width="12" height="17" rx="3"/><path d="m5 6-2 1 2 15 10-1M14 8l3 4-3 4-3-4Z"/></symbol>
+<symbol id="i-wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3v6.5M12 14.5V21M3 12h6.5M14.5 12H21M5.6 5.6l4.6 4.6m3.6 3.6 4.6 4.6m0-12.8-4.6 4.6m-3.6 3.6-4.6 4.6"/></symbol>
+<symbol id="i-dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="8" cy="8" r=".9"/><circle cx="16" cy="8" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="8" cy="16" r=".9"/><circle cx="16" cy="16" r=".9"/></symbol>
+<symbol id="i-lock" viewBox="0 0 12 14"><rect x="2" y="6" width="8" height="6" rx="1.5"/><path d="M3.5 6V4a2.5 2.5 0 0 1 5 0v2"/></symbol>
+</defs></svg>
+<div class="app" id="app">
+<header>
+<div class="topbar"><div class="round"><strong id="round">01</strong>回合</div><span class="privacy" id="privacy">本机记录 · 私密</span><button class="icon-button" id="settingsOpen" aria-label="打开设置"><svg class="icon"><use href="#i-settings"/></svg></button></div>
+<div class="chemistry"><div class="chem-head"><span class="chem-word">Chemistry</span><span class="chem-value" id="chemValue">00 / 100</span></div>
+<div class="levels" aria-label="互动尺度">
+<button class="level" data-level="0" aria-pressed="true"><i class="dot"></i>微醺</button><button class="level" data-level="1" aria-pressed="false"><i class="dot"></i>暧昧</button><button class="level" data-level="2" aria-pressed="false"><i class="dot"></i>亲密</button><button class="level" data-level="3" aria-pressed="false"><svg class="lock" id="adultLock"><use href="#i-lock"/></svg><i class="dot"></i>成人</button>
+</div><div class="progress" role="progressbar" aria-label="Chemistry" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><div class="progress-fill" id="progressFill"></div></div></div>
+<nav class="tabs" role="tablist" aria-label="游戏模式"><button class="tab" id="tab-card" role="tab" data-mode="card" aria-selected="false" aria-controls="pane-card" tabindex="-1"><svg class="icon"><use href="#i-cards"/></svg>抽扑克</button><button class="tab" id="tab-wheel" role="tab" data-mode="wheel" aria-selected="true" aria-controls="pane-wheel"><svg class="icon"><use href="#i-wheel"/></svg>大转盘</button><button class="tab" id="tab-dice" role="tab" data-mode="dice" aria-selected="false" aria-controls="pane-dice" tabindex="-1"><svg class="icon"><use href="#i-dice"/></svg>摇骰子</button></nav>
+</header>
+<main class="game">
+<section class="pane" id="pane-wheel" role="tabpanel" aria-labelledby="tab-wheel">
+<div class="mode-meta"><span>CHANCE / 02</span><b class="turn-label">A 方的回合</b></div>
+<div class="wheel-shell" id="wheelShell"><svg class="pointer" viewBox="0 0 18 25" aria-hidden="true"><path d="M2 2H16L9 23Z" fill="#e8cc9e" stroke="#f7e6cd" stroke-width=".7"/></svg><div id="wheelRotor"><svg id="wheelSVG" viewBox="0 0 400 400" role="img" aria-label="八等分互动转盘"></svg></div><button class="spin" id="spin" aria-label="转动大转盘">转</button></div>
+<p class="wheel-note" id="wheelNote">轻触中心，把选择交给运气</p>
+<div class="result" aria-live="polite" aria-atomic="true"><div class="result-top"><span class="eyebrow" id="wheelTitle">等待揭晓</span><span class="result-index" id="wheelIndex">01 — 08</span></div><p class="result-text" id="wheelText">八种互动，随心停留。</p><p class="hint" id="wheelHint">随时换题，无需解释。</p></div>
+<div class="actions"><button class="action" id="wheelSkip" disabled>换一道题</button><button class="action primary" id="wheelDone" disabled>完成</button></div>
+</section>
+<section class="pane" id="pane-card" role="tabpanel" aria-labelledby="tab-card" hidden>
+<div class="mode-meta"><span>CONNECTION / 01</span><b class="turn-label">A 方的回合</b></div>
+<div class="card-space"><button class="playing-card" id="playingCard" aria-label="点击翻开扑克"><div class="card-inner"><div class="face card-back" aria-hidden="true"><div class="back-art"><svg viewBox="0 0 180 180" fill="none"><circle cx="90" cy="90" r="70" stroke="#ceb390" stroke-width=".7"/><circle cx="90" cy="90" r="62" stroke="#ceb390" stroke-width=".5"/><path d="M90 22 148 90 90 158 32 90Z" stroke="#ceb390" stroke-width=".8"/><path d="M90 112C42 85 74 54 90 78c16-24 48 7 0 34Z" fill="#d7bca0"/><path d="M90 8v8m0 148v8M8 90h8m148 0h8" stroke="#ceb390"/></svg></div><span class="back-caption">轻触 · 翻开</span></div><div class="face card-front" id="cardFront" aria-hidden="true"><div class="card-corners"><span class="suit" id="cardRank">♥ 7</span><span class="card-category" id="cardCategory">心动</span></div><div class="card-copy" id="cardCopy"></div><div class="card-bottom" id="cardHint">想跳过，就换一张。</div></div></div></button></div>
+<p class="card-helper">轻触翻牌 · 向上轻滑换牌</p>
+<div class="actions"><button class="action" id="cardNext">换一张</button><button class="action primary" id="cardDone" disabled>完成</button></div>
+</section>
+<section class="pane" id="pane-dice" role="tabpanel" aria-labelledby="tab-dice" hidden>
+<div class="mode-meta"><span>PLAY / 03</span><b class="turn-label">A 方的回合</b></div>
+<div class="dice-space" id="diceSpace"><div class="die"><span class="die-label">谁来发起</span><span class="die-value" id="dieWho">你</span><span class="die-pips" aria-hidden="true"><i></i><i></i></span></div><div class="die dark"><span class="die-label">互动类型</span><span class="die-value" id="dieType">心动</span><span class="die-pips" aria-hidden="true"><i></i><i></i><i></i></span></div></div>
+<div class="result" aria-live="polite" aria-atomic="true"><div class="result-top"><span class="eyebrow" id="diceTitle">双倍随机</span><span class="result-index">01 + 02</span></div><p class="result-text" id="diceText">谁来发起，做点什么？</p><p class="hint" id="diceHint">「你」指当前回合的一方。</p></div>
+<div class="dice-controls"><button class="action primary" id="rollDice">摇骰子</button><div class="actions"><button class="action" id="diceSkip" disabled>换一道题</button><button class="action" id="diceDone" disabled>完成</button></div></div>
+<button class="motion-button" id="motionToggle">开启摇一摇</button>
+</section>
+</main>
+<footer class="footer"><span id="drinkLabel">轻量模式</span><i class="separator"></i><span>可随时跳过</span><i class="separator"></i><span>只存次数，不存回答</span></footer>
 </div>
-
-<div class="overlay" id="overlay">
-  <div id="message"></div>
-  <button id="nextBtn">下一关</button>
-</div>
-
+<div class="sheet-backdrop" id="settingsDialog" hidden><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="handle"></div><div class="sheet-head"><h2 id="settingsTitle">设置</h2><button class="icon-button close" aria-label="关闭设置">✕</button></div>
+<div class="sheet-section"><h3>饮品节奏</h3><div class="segmented" aria-label="饮品模式"><button data-drink="none" aria-pressed="false">无酒精</button><button data-drink="light" aria-pressed="true">轻量</button><button data-drink="normal" aria-pressed="false">普通</button></div><p class="hint" id="drinkDescription"></p></div>
+<div class="sheet-section"><div class="setting-row"><div class="hint">完成每题 +5 Chemistry。每 5 次完成升一级；成人级仍需双方确认。</div><button class="switch" id="autoToggle" aria-pressed="true">自动升温 · 开</button></div><p class="hint" style="margin-top:10px">点顶部等级可调整节奏。手动选择后暂停自动升温。</p></div>
+<div class="sheet-section"><div class="setting-row"><div><h3 style="margin-bottom:3px">成人模式 · 18+</h3><p class="hint" id="adultStatus">已锁定 · 需要双方分别确认</p></div><button class="switch" id="adultSetting">双方确认</button></div></div>
+<div class="sheet-section"><div class="result-top"><h3 style="margin:0">本机记录</h3><span class="hint" id="historyPeak"></span></div><div class="stats"><div class="stat"><strong id="statCard">0</strong><span>抽牌</span></div><div class="stat"><strong id="statWheel">0</strong><span>转盘</span></div><div class="stat"><strong id="statDice">0</strong><span>骰子</span></div></div><div class="history" id="historyList"></div><p class="hint" id="storageHint" style="margin-top:10px">仅保留日期、完成回合、三种操作次数及最高 Chemistry。刷新后从微醺开始，成人模式重新锁定。</p></div>
+<div class="actions"><button class="action" id="resetSession">重新开局</button><button class="action" id="clearHistory">清空记录</button></div>
+</section></div>
+<div class="sheet-backdrop" id="consentDialog" hidden><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="consentTitle"><div class="handle"></div><div class="sheet-head"><h2 id="consentTitle">成人模式</h2><button class="icon-button close" aria-label="取消成人模式">✕</button></div><p class="consent-intro">由亲密偏好、吸引与氛围慢慢展开。<br>请把手机依次交给双方，各自确认。</p><button class="consent-button" id="consentA" aria-pressed="false"><span class="consent-badge">A</span><span><strong>A 方确认</strong><small>我已满 18 岁，清醒且自愿参与。</small></span></button><button class="consent-button" id="consentB" aria-pressed="false"><span class="consent-badge">B</span><span><strong>B 方确认</strong><small>我已满 18 岁，清醒且自愿参与。</small></span></button><p class="hint consent-foot">每次接触仍需当下同意。任何一方都可以换题、暂停或退出，无需解释，也不罚酒。</p><button class="action primary full" id="unlockAdult" style="width:100%" disabled>双方确认后开启</button></section></div>
+<div class="toast" id="toast" role="status" hidden></div>
 <script>
-  const board = document.getElementById('board');
-  const levelSpan = document.getElementById('level');
-  const scoreSpan = document.getElementById('score');
-  const coinsSpan = document.getElementById('coins');
-  const overlay = document.getElementById('overlay');
-  const message = document.getElementById('message');
-  const nextBtn = document.getElementById('nextBtn');
-  const shuffleBtn = document.getElementById('shuffleBtn');
-  
-  const icons = ['🍎','🍌','🍓','🍒','🍇','🍉','🍑','🥝','🍍','🍋','🍈','🥭','🥥','🍐','🍊','🍅','🍆','🥕','🌽','🥔',
-                 '🐶','🐱','🐼','🐷','🐸','🐵','🐤','🐟','🦋','🦄'];
-  
-  let level = 1;
-  let score = 0;
-  let coins = 0;
-  let firstCard = null;
-  let secondCard = null;
-  let shuffleCount = 1;
-  
-  const gridConfigs = [
-    {rows:5, cols:4}, {rows:5, cols:6}, {rows:6, cols:6}, {rows:6, cols:7},
-    {rows:6, cols:8}, {rows:7, cols:8}, {rows:8, cols:8}, {rows:8, cols:8},
-    {rows:8, cols:8}, {rows:8, cols:8}
-  ];
-  const rewards = [50,60,70,80,90,100,110,120,130,150];
-  
-  function initGame() {
-    board.innerHTML = '';
-    overlay.style.display = 'none';
-    shuffleCount = 1;
-    shuffleBtn.textContent = `打乱(剩余${shuffleCount}次)`;
-    
-    const config = gridConfigs[level-1];
-    const size = config.rows * config.cols;
-    board.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
-    
-    let pairs = size / 2;
-    let gameIcons = icons.slice(0, pairs);
-    gameIcons = [...gameIcons, ...gameIcons];
-    gameIcons.sort(() => Math.random() - 0.5);
-    
-    gameIcons.forEach(icon => {
-      const card = document.createElement('div');
-      card.className = 'card hidden';
-      card.textContent = icon;
-      card.addEventListener('click', () => flipCard(card));
-      board.appendChild(card);
-    });
-    
-    firstCard = null;
-    secondCard = null;
-  }
-  
-  function flipCard(card) {
-    if (!card.classList.contains('hidden') || secondCard) return;
-    card.classList.remove('hidden');
-    card.style.transform = 'scale(1.1)';
-    setTimeout(() => card.style.transform = 'scale(1)', 200);
-    
-    if (!firstCard) {
-      firstCard = card;
-    } else {
-      secondCard = card;
-      if (firstCard.textContent === secondCard.textContent) {
-        score += 10;
-        scoreSpan.textContent = score;
-        firstCard = null;
-        secondCard = null;
-        checkWin();
-      } else {
-        setTimeout(() => {
-          firstCard.classList.add('hidden');
-          secondCard.classList.add('hidden');
-          firstCard = null;
-          secondCard = null;
-        }, 600);
-      }
-    }
-  }
-  
-  function checkWin() {
-    const hiddenCards = document.querySelectorAll('.card.hidden');
-    if (hiddenCards.length === 0) {
-      coins += rewards[level-1];
-      coinsSpan.textContent = coins;
-      message.textContent = `恭喜过关！获得 ${rewards[level-1]} 金币`;
-      overlay.style.display = 'flex';
-    }
-  }
-  
-  function shuffleBoard() {
-    if (shuffleCount <= 0) return;
-    shuffleCount--;
-    shuffleBtn.textContent = `打乱(剩余${shuffleCount}次)`;
-    
-    const cards = Array.from(board.children).filter(c => c.classList.contains('hidden'));
-    const iconsArr = cards.map(c => c.textContent);
-    iconsArr.sort(() => Math.random() - 0.5);
-    
-    cards.forEach((card, i) => {
-      card.textContent = iconsArr[i];
-    });
-  }
-  
-  shuffleBtn.addEventListener('click', shuffleBoard);
-  
-  nextBtn.addEventListener('click', () => {
-    level++;
-    if (level > 10) {
-      message.textContent = `恭喜完成所有关卡！总金币：${coins}`;
-      nextBtn.style.display = 'none';
-    } else {
-      levelSpan.textContent = level;
-      initGame();
-    }
-  });
-  
-  document.getElementById('restartBtn').addEventListener('click', () => {
-    level = 1;
-    score = 0;
-    coins = 0;
-    levelSpan.textContent = level;
-    scoreSpan.textContent = score;
-    coinsSpan.textContent = coins;
-    nextBtn.style.display = 'inline-block';
-    initGame();
-  });
-  
-  initGame();
+'use strict';
+// All geometry is in one 400 × 400 coordinate system. Only #wheelRotor rotates.
+const $=id=>document.getElementById(id), $$=s=>Array.from(document.querySelectorAll(s));
+const LEVELS=['微醺','暧昧','亲密','成人'];
+const CATEGORIES=['心动问答','默契测试','亲密挑战','温柔接触','悄悄说','氛围选择','小口慢饮','自由选择'];
+// Each level has 8 categories × 3 prompts. Adult prompts remain non-graphic.
+const PROMPTS=[
+[
+['对方最近做过哪件小事，让你心情变好了？','用三个词，形容此刻眼前的人。','说说你最喜欢对方笑起来的哪个细节。'],
+['同时说出一种适合一起分享的夜宵。','数到三，一起说更喜欢海边还是山间。','猜一猜对方现在想听安静的歌，还是轻快的歌。'],
+['看着对方 15 秒，谁先笑都没有惩罚。','模仿一个开心时的小表情，让对方猜。','轮流说一句具体的赞美，不重复。'],
+['先问一句「可以吗」，再轻轻碰一下彼此的手背。','如果都愿意，用掌心轻轻击个掌。','问问对方，愿不愿意和你并肩坐近一点。'],
+['轻声告诉对方，今天让你开心的一件事。','为对方想一个只用于这局游戏的温柔称呼。','告诉对方，你今天最期待一起做的小事。'],
+['选一个约会背景：雨声、爵士，还是海浪？','一起想象一间小酒馆：窗边还是吧台？','暖灯和烛光，你们更喜欢哪一种？'],
+['暂停十秒，放松肩膀，再继续。','交换一个笑容，让节奏慢一点。','用一个词，说说此刻的心情。'],
+['从问答、默契、氛围中，选一个想继续的方向。','请对方给你一个简单的选择题。','各说一个想一起尝试的小活动。']
+],
+[
+['对方哪个不经意的小动作，最容易让你心动？','什么样的邀约，会让你立刻期待起来？','你喜欢被直接夸奖，还是被悄悄照顾？'],
+['同时选择：牵手散步，还是靠着看电影？','猜对方更喜欢主动靠近，还是被温柔邀请。','各自在心里选一个约会地点，然后同时说出来。'],
+['靠近一点看着彼此，轮流说一句真心的夸奖。','用一句话邀请对方，和你再约会一次。','把「我有点想你」换成你自己的说法。'],
+['如果都愿意，牵手 15 秒，再轻轻松开。','先问对方愿不愿意，给彼此一个短短的拥抱。','询问之后，轻轻替对方整理一下袖口。'],
+['轻声告诉对方，哪种相处瞬间让你想靠近。','用平时很少使用的温柔语气，叫一次对方。','说一句你喜欢听见的、自然的情话。'],
+['一起选：缓慢的舞曲，还是安静的钢琴？','如果只有半小时约会，你会怎样安排？','选一个让彼此都自在的距离，坐好再继续。'],
+['让目光停留一会儿，再慢慢继续。','说一句感谢，送给这一刻的陪伴。','各用一个词，描述此刻的气氛。'],
+['选一个：多聊一点，牵一会儿手，或休息。','请对方选择一个让自己舒服的浪漫小互动。','一起设计一句听到就会微笑的暗号。']
+],
+[
+['什么样的拥抱，会让你觉得被认真珍惜？','你希望对方怎样表达「我想更靠近你」？','亲密相处时，哪种细节最让你安心？'],
+['各说一个喜欢的亲密小习惯，看看有没有相同答案。','同时选：额头相贴，拥抱，还是牵手？','猜一猜对方更喜欢轻声交谈，还是安静相拥。'],
+['如果都愿意，拥抱 20 秒；随时松开也可以。','靠近之前，认真问一句「现在这样舒服吗？」','轮流完成这句话：「和你靠近时，我喜欢……」'],
+['先征求同意，轻吻一下对方的手背或额头。','如果都愿意，让额头轻轻相贴，停留几秒。','问问对方，愿不愿意靠在你的肩上休息片刻。'],
+['说说你最希望被怎样温柔对待。','用一句话告诉对方，什么让你有安全感。','分享一句能让你放松下来的亲密邀请。'],
+['你更喜欢亲密前多一些交流，还是多一点安静陪伴？','一起选一个都舒服的灯光、距离和节奏。','为一段不被打扰的相处，安排三个小细节。'],
+['短暂停一停，问问彼此是否想继续。','放松一下，看看对方现在的感受。','给彼此一个可以放慢节奏的空隙。'],
+['在拥抱、交谈、安静陪伴中，一起选一个。','各说一个「喜欢」和「暂时不想」，不用说明理由。','一起约定一个表示放慢、一个表示停止的词。']
+],
+[
+['对方身上哪个非私密部位，最让你觉得有吸引力？','亲密时，你更喜欢被温柔邀请，还是由自己主动？','哪种眼神或语气，会让你想更靠近？'],
+['各选一个更喜欢的亲吻氛围：安静、俏皮，或缓慢。','轮流说一个喜欢的接近方式，再确认彼此是否都愿意。','你们偏好的亲密节奏，哪些相似，哪些需要沟通？'],
+['如果都愿意，交换一个短吻，再问问对方的感受。','在双方同意的距离里，看着彼此说一句真诚的邀请。','轮流说出希望对方怎样表达想靠近你的心情。'],
+['先问过对方，再选择牵手、拥抱或轻吻，停在双方舒服的位置。','如果都愿意，隔着衣服轻抚对方的背部片刻。','询问之后，轻轻环住对方的腰；也可以只牵手。'],
+['分享一个不涉及第三人的浪漫幻想，只谈场景与氛围即可。','用「我喜欢……」描述一个亲密偏好，再听听对方的。','说说怎样的亲密邀请让你自在，怎样的表达会有压力。'],
+['如果安排一段私密约会，你会选择怎样的灯光和音乐？','亲密相处之后，你更想被拥抱、聊天，还是安静休息？','一起描述一个有吸引力又让双方安心的约会场景。'],
+['先问一句：想继续、放慢，还是暂停？','留一点空白，让彼此确认此刻的感受。','暂停一下，照顾自己的舒适与清醒。'],
+['各提一个此刻愿意的互动，只选择双方都愿意的那一个。','说一个想尝试的浪漫互动，也说出希望保留的边界。','一起决定继续聊天、温柔接触，或回到更轻松的等级。']
+]
+];
+const state={mode:'wheel',level:0,chem:0,round:1,adult:false,consent:[false,false],auto:true,drink:'light',rotation:0,spinning:false,rolling:false,cardBusy:false,card:null,wheel:null,dice:null,cardRevealed:false,motion:false,reduce:matchMedia('(prefers-reduced-motion: reduce)').matches};
+const KEY='couple_game_records_v1'; let records=[],storageOK=true,toastTimer,spinTimer,diceTimer,cardTimer,modal=null,lastFocus=null,scrollYBefore=0,lastMotion=0,motionPrev=null; const recent=new Map();
+function day(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function validRecord(r){return r&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&['rounds','card','wheel','dice','peak'].every(k=>Number.isSafeInteger(r[k])&&r[k]>=0)&&r.peak<=100}
+try{const raw=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(raw))records=raw.filter(validRecord).map(({date,rounds,card,wheel,dice,peak})=>({date,rounds,card,wheel,dice,peak}));const probe=KEY+'_probe';localStorage.setItem(probe,'1');localStorage.removeItem(probe)}catch(e){storageOK=false}
+function save(kind){let r=records.find(x=>x.date===day());if(!r){r={date:day(),rounds:0,card:0,wheel:0,dice:0,peak:0};records.push(r)}if(kind)r[kind]++;r.peak=Math.max(r.peak,state.chem);try{localStorage.setItem(KEY,JSON.stringify(records))}catch(e){storageOK=false}updateStorageLabel()}
+function updateStorageLabel(){$('privacy').textContent=storageOK?'本机记录 · 私密':'临时记录 · 私密';if(!storageOK)$('storageHint').textContent='当前浏览器未允许本地保存；本次仍可玩，关闭后记录可能丢失。请用完整浏览器打开文件。'}
+function random(n){if(globalThis.crypto&&crypto.getRandomValues){const a=new Uint32Array(1),limit=Math.floor(4294967296/n)*n;do{crypto.getRandomValues(a)}while(a[0]>=limit);return a[0]%n}return Math.floor(Math.random()*n)}
+function choose(level,cat){const pool=PROMPTS[level][cat],key=level+':'+cat,last=recent.get(key);let i=random(pool.length);if(i===last)i=(i+1+random(pool.length-1))%pool.length;recent.set(key,i);return{cat,level,text:pool[i],done:false}}
+function drinkHint(){if(state.drink==='none')return '用水或无酒精饮品，喝一小口；也可跳过。';if(state.drink==='light')return '饮酒完全自愿，随时可以用水替代。';return '想喝时，喝一小口；也可用水替代或跳过。'}
+function hintFor(item){if(item.cat===6){if(state.drink==='light')return state.round%2===0?'如果愿意，喝一小口；可用水替代或跳过。':'这一回合用水或无酒精饮品，喝一小口，也可跳过。';return drinkHint()}return item.level>=2?'每次接触先询问；随时换题，无需解释。':'按彼此舒服的节奏，随时可以换题。'}
+function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2700)}
+function busy(){return state.spinning||state.rolling||state.cardBusy}
+function updateHeader(){$('round').textContent=String(state.round).padStart(2,'0');$('chemValue').textContent=String(state.chem).padStart(2,'0')+' / 100';$('progress').setAttribute('aria-valuenow',state.chem);$('progressFill').style.transform=`scaleX(${state.chem/100})`;$$('.level').forEach((b,i)=>b.setAttribute('aria-pressed',i===state.level));$$('.turn-label').forEach(e=>e.textContent=(state.round%2?'A':'B')+' 方的回合');$('adultLock').toggleAttribute('hidden',state.adult);$('autoToggle').textContent='自动升温 · '+(state.auto?'开':'关');$('autoToggle').setAttribute('aria-pressed',state.auto);$('adultStatus').textContent=state.adult?'本局已开启 · 可随时锁定':'已锁定 · 需要双方分别确认';$('adultSetting').textContent=state.adult?'立即锁定':'双方确认'}
+function buildWheel(){const svg=$('wheelSVG'),ns='http://www.w3.org/2000/svg',cx=200,cy=200,R=194;const colors=['#67464e','#493139','#71515a','#4e363d','#62434c','#423139','#73545a','#4e383e'];const el=(tag,attrs)=>{const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));return n};const point=(a,r)=>({x:cx+Math.cos(a*Math.PI/180)*r,y:cy+Math.sin(a*Math.PI/180)*r});
+svg.append(el('circle',{cx,cy,r:199,fill:'#21191d'}));
+CATEGORIES.forEach((label,i)=>{const start=-112.5+i*45,end=start+45,mid=start+22.5,a=point(start,R),b=point(end,R);svg.append(el('path',{d:`M ${cx} ${cy} L ${a.x} ${a.y} A ${R} ${R} 0 0 1 ${b.x} ${b.y} Z`,fill:colors[i],stroke:'#c3a293', 'stroke-opacity':'.20','stroke-width':1}));const p=point(mid,R*.635),chars=Array.from(label); // max four characters per line; max two lines, shrink long strings.
+const lines=chars.length<=4?[label]:[chars.slice(0,Math.ceil(chars.length/2)).join(''),chars.slice(Math.ceil(chars.length/2)).join('')];const font=Math.min(17,68/Math.max(...lines.map(x=>Array.from(x).length))),text=el('text',{x:p.x,y:p.y,fill:'#f4e7db','font-size':font,'font-weight':650,'text-anchor':'middle','dominant-baseline':'middle','data-index':i});lines.forEach((line,j)=>{const t=el('tspan',{x:p.x,y:p.y+(j-(lines.length-1)/2)*font*1.25});t.textContent=line;text.append(t)});svg.append(text);
+});svg.append(el('circle',{cx,cy,r:194,fill:'none',stroke:'#cfb18d','stroke-opacity':'.45','stroke-width':1.5}));}
+function renderWheel(){const w=state.wheel;$('wheelTitle').textContent=w?CATEGORIES[w.cat]:'等待揭晓';$('wheelText').textContent=w?w.text:'八种互动，随心停留。';$('wheelHint').textContent=w?hintFor(w):'随时换题，无需解释。';$('wheelIndex').textContent=w?String(w.cat+1).padStart(2,'0')+' / 08':'01 — 08';$('wheelDone').disabled=!w||w.done||state.spinning;$('wheelSkip').disabled=!w||state.spinning;$('wheelDone').textContent=w&&w.done?'已完成':'完成';$('spin').disabled=state.spinning;$('wheelNote').textContent=state.spinning?'慢慢停下，答案即将揭晓':w?'再转一次，或留在这一道题':'轻触中心，把选择交给运气'}
+// Sector i has center -90 + i*45 degrees. Pointer is fixed at -90.
+// Thus final normalized rotation = (-i*45) mod 360. Add full forward turns.
+function landingAngle(rotation,targetIndex,turns){const desired=((360-targetIndex*45)%360+360)%360,current=((rotation%360)+360)%360,delta=(desired-current+360)%360;return rotation+turns*360+delta}
+function spin(){if(busy()||modal)return;state.spinning=true;const index=random(8),turns=4+random(2); // 4–5 full turns plus alignment, always <6 total.
+const final=landingAngle(state.rotation,index,turns),duration=state.reduce?1:4100;state.rotation=final;const candidate=choose(state.level,index);$('wheelShell').classList.remove('landed');renderWheel();$('wheelTitle').textContent='正在转动';$('wheelText').textContent='把这一刻，留给一点随机。';$('wheelHint').textContent='指针停下后揭晓。';const rotor=$('wheelRotor');rotor.style.transition=`transform ${duration}ms cubic-bezier(.12,.74,.15,1)`;rotor.style.transform=`rotate(${final}deg)`;let finished=false;const finish=()=>{if(finished)return;finished=true;clearTimeout(spinTimer);rotor.removeEventListener('transitionend',end);state.spinning=false;state.wheel=candidate;save('wheel');renderWheel();$('wheelShell').classList.add('landed')};const end=e=>{if(e.target===rotor&&e.propertyName==='transform')finish()};rotor.addEventListener('transitionend',end);spinTimer=setTimeout(finish,duration+100)}
+function revealCard(){if(busy()||modal||state.cardRevealed)return;if(!state.card)state.card=choose(state.level,random(8));state.cardRevealed=true;save('card');renderCard()}
+function renderCard(){const c=state.card;$('playingCard').classList.toggle('flipped',state.cardRevealed);$('cardFront').setAttribute('aria-hidden',!state.cardRevealed);$('playingCard').setAttribute('aria-label',state.cardRevealed?`${CATEGORIES[c.cat]}。${c.text}。向上滑可换牌。`:'点击翻开扑克');$('cardCopy').textContent=c?c.text:'';$('cardCategory').textContent=c?CATEGORIES[c.cat].replace('问答','').replace('挑战',''):'';$('cardRank').textContent=['♥','♦','♣','♠'][c?c.cat%4:0]+' '+(c?['7','Q','8','K','9','A','6','J'][c.cat]:'7');$('cardHint').textContent=c&&c.cat===6?hintFor(c):'想跳过，就换一张。';$('cardDone').disabled=!state.cardRevealed||!c||c.done||state.cardBusy;$('cardDone').textContent=c&&c.done?'已完成':'完成';$('cardNext').disabled=state.cardBusy}
+function nextCard(){if(busy()||modal)return;state.cardBusy=true;state.cardRevealed=false;renderCard();cardTimer=setTimeout(()=>{state.card=choose(state.level,random(8));state.cardBusy=false;renderCard()},state.reduce?1:570)}
+function renderDice(){const d=state.dice;$('dieWho').textContent=d?d.who:'你';$('dieType').textContent=d?['心动','默契','挑战','接触','悄悄说','氛围','慢饮','自由'][d.cat]:'心动';$('diceTitle').textContent=d?(d.actor+'发起 · '+CATEGORIES[d.cat]):'双倍随机';$('diceText').textContent=d?d.text:'谁来发起，做点什么？';$('diceHint').textContent=d?hintFor(d):'「你」指当前回合的一方。';$('diceDone').disabled=!d||d.done||state.rolling;$('diceSkip').disabled=!d||state.rolling;$('diceDone').textContent=d&&d.done?'已完成':'完成';$('rollDice').disabled=state.rolling;$('rollDice').textContent=state.rolling?'正在摇动…':'摇骰子'}
+function rollDice(){if(busy()||modal||state.mode!=='dice')return;state.rolling=true;const who=['你','对方','两个人'][random(3)],self=state.round%2?'A 方':'B 方',other=state.round%2?'B 方':'A 方',candidate={...choose(state.level,random(8)),who,actor:who==='你'?self:who==='对方'?other:'双方'};renderDice();$('diceSpace').classList.remove('rolling');void $('diceSpace').offsetWidth;$('diceSpace').classList.add('rolling');diceTimer=setTimeout(()=>{state.rolling=false;state.dice=candidate;save('dice');$('diceSpace').classList.remove('rolling');renderDice()},state.reduce?1:750)}
+function skip(mode){if(busy()||modal)return;const old=state[mode];if(!old)return;state[mode]={...choose(state.level,old.cat),...(mode==='dice'?{who:old.who,actor:old.actor}:{})};mode==='wheel'?renderWheel():renderDice()}
+function clearPrompts(){state.card=null;state.cardRevealed=false;state.wheel=null;state.dice=null;renderCard();renderWheel();renderDice()}
+function setLevel(level,manual=true){if(busy()){toast('等这一轮揭晓后再调整');return}if(level===3&&!state.adult){openConsent();return}if(manual&&level>state.level+1){toast('先体验下一等级，再慢慢升温');return}state.level=level;if(manual)state.auto=false;clearPrompts();updateHeader()}
+function complete(mode){if(busy()||modal)return;const item=state[mode];if(!item||item.done||(mode==='card'&&!state.cardRevealed))return;item.done=true;state.chem=Math.min(100,state.chem+5);state.round++;save('rounds');let notice='已完成 · Chemistry +5';if(state.chem===100)notice='已完成 · Chemistry 100';if(state.auto){const desired=Math.min(3,Math.floor(state.chem/25));if(desired>state.level){if(desired===3&&!state.adult){if(state.chem===75)notice='已到成人级门槛 · 点「成人」由双方确认'}else{state.level=Math.min(state.level+1,desired);clearPrompts();notice='已进入'+LEVELS[state.level]+' · 仍可随时换题'}}}updateHeader();renderWheel();renderCard();renderDice();toast(notice)}
+function switchMode(mode){if(state.mode===mode)return;state.mode=mode;$$('.tab').forEach(b=>{const active=b.dataset.mode===mode;b.setAttribute('aria-selected',active);b.tabIndex=active?0:-1});$$('.pane').forEach(p=>p.hidden=p.id!=='pane-'+mode)}
+function updateDrink(){const map={none:'无酒精模式',light:'轻量模式',normal:'普通模式'};$('drinkLabel').textContent=map[state.drink];$$('[data-drink]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.drink===state.drink));$('drinkDescription').textContent={none:'所有慢饮题均使用水或无酒精饮品。任何一口都可跳过。',light:'慢饮题在奇数回合用水，偶数回合可自愿喝一小口。不叠加，不补喝。',normal:'仅慢饮题提示自愿喝一小口。不累计，不罚酒，可随时用水替代。'}[state.drink];renderWheel();renderCard();renderDice()}
+function renderHistory(){const total=records.reduce((a,r)=>({card:a.card+r.card,wheel:a.wheel+r.wheel,dice:a.dice+r.dice,peak:Math.max(a.peak,r.peak)}),{card:0,wheel:0,dice:0,peak:0});$('statCard').textContent=total.card;$('statWheel').textContent=total.wheel;$('statDice').textContent=total.dice;$('historyPeak').textContent='最高 '+total.peak;$('historyList').replaceChildren();if(!records.length){const p=document.createElement('p');p.className='hint';p.textContent='完成第一道题，留下第一条记录。';$('historyList').append(p)}else records.slice().sort((a,b)=>b.date.localeCompare(a.date)).forEach(r=>{const row=document.createElement('div');row.className='history-row';const d=document.createElement('span'),v=document.createElement('span');d.textContent=r.date;v.textContent=`${r.rounds} 回合 · 扑克 ${r.card} / 转盘 ${r.wheel} / 骰子 ${r.dice} · 最高 ${r.peak}`;row.append(d,v);$('historyList').append(row)})}
+function openModal(id){if(modal)closeModal(false);lastFocus=document.activeElement;modal=$(id);scrollYBefore=window.scrollY;document.body.style.position='fixed';document.body.style.top=-scrollYBefore+'px';document.body.style.width='100%';$('app').inert=true;$('app').setAttribute('aria-hidden','true');modal.hidden=false;modal.querySelector('button').focus({preventScroll:true})}
+function closeModal(restore=true){if(!modal)return;modal.hidden=true;modal=null;$('app').inert=false;$('app').removeAttribute('aria-hidden');document.body.style.position='';document.body.style.top='';document.body.style.width='';window.scrollTo(0,scrollYBefore);if(restore&&lastFocus&&lastFocus.isConnected)lastFocus.focus({preventScroll:true})}
+function openConsent(){if(busy()){toast('等这一轮结束后再确认');return}state.consent=[false,false];['consentA','consentB'].forEach(id=>$(id).setAttribute('aria-pressed','false'));$('unlockAdult').disabled=true;$('unlockAdult').textContent='双方确认后开启';openModal('consentDialog')}
+function lockAdult(){if(busy()){toast('等这一轮结束后再锁定');return}state.adult=false;state.consent=[false,false];state.level=Math.min(state.level,2);clearPrompts();updateHeader();toast('成人模式已锁定')}
+function resetSession(){if(busy()){toast('等这一轮结束后再重新开局');return}state.chem=0;state.round=1;state.level=0;state.adult=false;state.auto=true;state.consent=[false,false];recent.clear();clearPrompts();updateHeader();closeModal();toast('新的一局，从微醺开始')}
+function onMotion(e){if(!state.motion||document.hidden||modal||state.mode!=='dice'||busy())return;const a=e.accelerationIncludingGravity;if(!a||[a.x,a.y,a.z].some(x=>typeof x!=='number'))return;const now=Date.now();if(motionPrev){const delta=Math.hypot(a.x-motionPrev.x,a.y-motionPrev.y,a.z-motionPrev.z);if(delta>17&&now-lastMotion>2000){lastMotion=now;rollDice()}}motionPrev={x:a.x,y:a.y,z:a.z}}
+async function toggleMotion(){if(state.motion){window.removeEventListener('devicemotion',onMotion);state.motion=false;$('motionToggle').textContent='开启摇一摇';return}if(!('DeviceMotionEvent'in window)){toast('此设备不支持摇一摇，点击按钮即可');return}try{if(typeof DeviceMotionEvent.requestPermission==='function'){const permission=await DeviceMotionEvent.requestPermission();if(permission!=='granted'){toast('未开启动作权限，按钮仍可使用');return}}state.motion=true;motionPrev=null;lastMotion=Date.now();window.addEventListener('devicemotion',onMotion,{passive:true});$('motionToggle').textContent='摇一摇已开启 · 点击关闭';toast('轻摇手机试试；无响应可继续点击按钮')}catch(e){state.motion=false;toast('当前环境无法开启，点击按钮即可')}}
+$('spin').addEventListener('click',spin);$('wheelSkip').addEventListener('click',()=>skip('wheel'));$('wheelDone').addEventListener('click',()=>complete('wheel'));$('playingCard').addEventListener('click',revealCard);$('cardNext').addEventListener('click',nextCard);$('cardDone').addEventListener('click',()=>complete('card'));$('rollDice').addEventListener('click',rollDice);$('diceSkip').addEventListener('click',()=>skip('dice'));$('diceDone').addEventListener('click',()=>complete('dice'));$('motionToggle').addEventListener('click',toggleMotion);
+let touchStart=null,suppressClick=false;$('playingCard').addEventListener('touchstart',e=>{if(e.touches.length===1)touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY}}, {passive:true});$('playingCard').addEventListener('touchend',e=>{if(!touchStart)return;const t=e.changedTouches[0],dy=t.clientY-touchStart.y,dx=t.clientX-touchStart.x;touchStart=null;if(dy<-45&&Math.abs(dy)>Math.abs(dx)*1.5){suppressClick=true;nextCard();setTimeout(()=>suppressClick=false,600)}},{passive:true});$('playingCard').addEventListener('touchcancel',()=>touchStart=null,{passive:true});$('playingCard').addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopImmediatePropagation()}},true);
+$$('.tab').forEach(b=>{b.addEventListener('click',()=>switchMode(b.dataset.mode));b.addEventListener('keydown',e=>{const tabs=$$('.tab'),i=tabs.indexOf(b);let target;if(e.key==='ArrowRight')target=(i+1)%3;if(e.key==='ArrowLeft')target=(i+2)%3;if(e.key==='Home')target=0;if(e.key==='End')target=2;if(target!==undefined){e.preventDefault();switchMode(tabs[target].dataset.mode);tabs[target].focus()}})});
+$$('.level').forEach(b=>b.addEventListener('click',()=>setLevel(Number(b.dataset.level))));$('settingsOpen').addEventListener('click',()=>{renderHistory();openModal('settingsDialog')});$$('.sheet-backdrop').forEach(d=>{d.addEventListener('click',e=>{if(e.target===d)closeModal()});d.querySelector('.close').addEventListener('click',()=>closeModal())});
+$$('[data-drink]').forEach(b=>b.addEventListener('click',()=>{state.drink=b.dataset.drink;updateDrink()}));$('autoToggle').addEventListener('click',()=>{state.auto=!state.auto;updateHeader()});$('adultSetting').addEventListener('click',()=>state.adult?lockAdult():openConsent());$('resetSession').addEventListener('click',resetSession);
+$('clearHistory').addEventListener('click',()=>{if(confirm('清空此浏览器中的全部次数记录？本局游戏会继续。')){records=[];try{localStorage.removeItem(KEY)}catch(e){storageOK=false}renderHistory();toast('本机记录已清空')}});
+['consentA','consentB'].forEach((id,i)=>$(id).addEventListener('click',()=>{state.consent[i]=!state.consent[i];$(id).setAttribute('aria-pressed',state.consent[i]);const yes=state.consent.every(Boolean);$('unlockAdult').disabled=!yes;$('unlockAdult').textContent=yes?'开启成人模式':'等待另一方确认'}));$('unlockAdult').addEventListener('click',()=>{if(!state.consent.every(Boolean))return;state.adult=true;state.level=3;state.auto=false;closeModal();clearPrompts();updateHeader();toast('成人模式已开启 · 每题仍可自由跳过')});
+document.addEventListener('keydown',e=>{if(!modal)return;if(e.key==='Escape'){e.preventDefault();closeModal()}else if(e.key==='Tab'){const list=Array.from(modal.querySelectorAll('button:not(:disabled),[tabindex="0"]')).filter(el=>el.getClientRects().length),first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});document.addEventListener('visibilitychange',()=>{motionPrev=null});
+buildWheel();updateHeader();updateDrink();updateStorageLabel();
 </script>
-
 </body>
 </html>
