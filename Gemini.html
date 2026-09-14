@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#181315">
+<title>双人 · 升温阶梯</title>
+<style>
+:root{color-scheme:dark;--bg:#181315;--panel:#251e20;--line:rgba(231,207,189,.13);--text:#f0e4d8;--muted:#b4a39d;--gold:#dcc4a0;--ease:cubic-bezier(.2,.7,.2,1)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{min-height:100%;background:var(--bg);-webkit-text-size-adjust:100%;scrollbar-gutter:stable}
+body{margin:0;min-width:0;color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC",sans-serif;background:radial-gradient(ellipse at 50% 12%,#302026 0,transparent 54%),var(--bg);overflow-wrap:anywhere}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;min-width:0;min-height:44px;border:0;background:none;padding:0;transition:transform 150ms,background 180ms,opacity 180ms}
+button:active:not(:disabled){transform:scale(.98)}
+button:disabled{cursor:default;opacity:.43}
+svg{display:block;max-width:100%}
+[hidden]{display:none!important}
+h1,h2,h3,p{margin:0}
+.app{width:min(100%,480px);margin:auto;min-height:100vh;min-height:100dvh;padding:max(8px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.topbar{display:grid;grid-template-columns:minmax(70px,1fr) auto minmax(44px,1fr);gap:6px;align-items:center;min-height:46px}
+.round{font-size:12px;color:var(--muted);white-space:nowrap}
+.round strong{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text);margin-right:5px}
+.icon-button{width:44px;aspect-ratio:1;display:grid;place-items:center;justify-self:end}
+.icon{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+.chemistry{padding:8px 0 14px}
+.chem-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.chem-word{font-family:Georgia,"Times New Roman",serif;font-size:20px;font-style:italic;letter-spacing:.2px}
+.chem-value{font-size:10px;letter-spacing:1px;color:var(--gold);font-variant-numeric:tabular-nums}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:1px}
+.level{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;font-size:12px;color:var(--muted);position:relative}
+.level:first-child{justify-content:flex-start}
+.level:last-child{justify-content:flex-end}
+.level[aria-pressed=true]{color:var(--gold)}
+.level .dot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:0}
+.level[aria-pressed=true] .dot{opacity:1}
+.lock{width:11px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5}
+.progress{height:3px;border-radius:5px;background:#3a2d31;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;width:100%;background:linear-gradient(90deg,#826269,var(--gold));transform:scaleX(0);transform-origin:left;transition:transform 400ms var(--ease)}
+
+.game{padding-top:12px;min-width:0}
+.pane{animation:appear 200ms var(--ease);min-height:clamp(475px,61dvh,590px);display:flex;flex-direction:column;align-items:center;gap:12px}
+.mode-meta{width:100%;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:10px;letter-spacing:.7px;min-height:18px}
+.mode-meta b{font-weight:400;color:var(--gold)}
+.actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.action{min-height:48px;border-radius:15px;border:1px solid var(--line);background:#292124;font-size:13px;font-weight:500;padding:10px 14px}
+.action.primary{background:var(--gold);color:#302428;border-color:transparent;box-shadow:0 4px 18px #0002}
+.action.full{grid-column:1/-1}
+.card-space{width:100%;display:grid;place-items:center;perspective:1200px;flex:1;min-height:340px}
+.playing-card{position:relative;width:min(65vw,calc(46dvh * .71),280px);min-width:min(230px,100%);max-width:100%;aspect-ratio:.71;touch-action:pan-x pinch-zoom;border-radius:26px;text-align:left;box-shadow:0 18px 32px #0005;background:transparent;min-height:0}
+.card-inner{width:100%;height:100%;transform-style:preserve-3d;transition:transform 560ms cubic-bezier(.2,.7,.25,1)}
+.playing-card.flipped .card-inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:26px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.card-back{border:1px solid #a1787966;background:repeating-linear-gradient(45deg,transparent 0 12px,#be8e8710 12px 13px),#493039;display:grid;place-items:center}
+.card-back:before{content:"";position:absolute;inset:12px;border:1px solid #d6bda255;border-radius:17px}
+.back-caption{position:absolute;bottom:27px;left:16px;right:16px;text-align:center;font-size:11px;color:#dec6b9;letter-spacing:2px}
+.card-front{transform:rotateY(180deg);background:#ebddca;color:#382b2a;padding:clamp(18px,5vw,25px);display:flex;flex-direction:column;border:1px solid #fff5}
+.card-corners{display:flex;justify-content:space-between;align-items:center;gap:8px;flex:none}
+.suit{font:24px Georgia,serif;color:#824b52}
+.card-category{font-size:11px;color:#71534f; border: 1px solid #71534f; padding: 2px 6px; border-radius: 8px;}
+.card-copy{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(16px,4.5vw,20px);line-height:1.7;font-weight:500;padding:12px 0;white-space:pre-line}
+.card-bottom{border-top:1px solid #70544b30;padding-top:12px;text-align:center;color:#79635a;font-size:10px}
+.card-helper{font-size:11px;color:var(--muted);text-align:center;min-height:18px}
+
+.sheet-backdrop{position:fixed;inset:0;background:#080507b8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:10;display:flex;align-items:flex-end;justify-content:center;padding-top:max(20px,env(safe-area-inset-top));animation:appear 180ms ease}
+.sheet{width:min(100%,480px);max-height:calc(100vh - 30px);max-height:calc(100dvh - max(24px,env(safe-area-inset-top)));overflow-y:auto;overscroll-behavior:contain;background:#241d20;border-radius:28px 28px 0 0;padding:12px max(20px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));border:1px solid var(--line);box-shadow:0 -16px 60px #0003}
+.handle{width:32px;height:4px;background:#655057;border-radius:4px;margin:0 auto 9px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.sheet-head h2{font-size:19px;font-weight:500}
+.sheet-section{padding:15px 0;border-top:1px solid var(--line)}
+.setting-row{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.setting-row .hint{flex:1; font-size: 12px; color: var(--muted);}
+.switch{flex:none;padding:8px 12px;font-size:11px;border:1px solid var(--line);border-radius:12px}
+.switch[aria-pressed="true"]{background: var(--gold); color: #302428;}
+.consent-intro{font-size:14px;line-height:1.8;margin-bottom:17px}
+.consent-button{width:100%;display:flex;align-items:center;gap:13px;padding:13px;margin:10px 0;border:1px solid var(--line);border-radius:16px;text-align:left;background:#2d2428}
+.consent-badge{display:grid;place-items:center;width:36px;aspect-ratio:1;border:1px solid #bca07e55;border-radius:50%;flex:none;font:italic 18px Georgia,serif;color:var(--gold)}
+.consent-button strong{font-size:13px;font-weight:500;display:block}
+.consent-button small{font-size:10px;color:var(--muted)}
+.consent-button[aria-pressed=true]{border-color:#c6aa83;background:#43343a}
+.consent-foot{margin:15px 0; font-size: 11px; color: var(--muted);}
+.toast{position:fixed;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 12px));transform:translateX(-50%);width:max-content;max-width:calc(100vw - 40px);padding:11px 18px;border-radius:16px;background:#ead7c2;color:#39282e;font-size:12px;text-align:center;z-index:20;box-shadow:0 8px 30px #0006;pointer-events:none;animation:appear 200ms ease}
+@keyframes appear{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" width="0" height="0" style="position:absolute"><defs>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="#211a1d"/><circle cx="16" cy="17" r="3" fill="#211a1d"/></symbol>
+<symbol id="i-lock" viewBox="0 0 12 14"><rect x="2" y="6" width="8" height="6" rx="1.5"/><path d="M3.5 6V4a2.5 2.5 0 0 1 5 0v2"/></symbol>
+</defs></svg>
+
+<div class="app" id="app">
+<header>
+<div class="topbar">
+    <div class="round"><strong id="round">01</strong>回合</div>
+    <button class="icon-button" id="settingsOpen" aria-label="打开设置"><svg class="icon"><use href="#i-settings"/></svg></button>
+</div>
+<div class="chemistry">
+    <div class="chem-head"><span class="chem-word">Chemistry</span><span class="chem-value" id="chemValue">00 / 100</span></div>
+    <div class="levels" aria-label="互动尺度">
+        <button class="level" data-level="0" aria-pressed="true"><i class="dot"></i>37℃</button>
+        <button class="level" data-level="1" aria-pressed="false"><i class="dot"></i>70℃</button>
+        <button class="level" data-level="2" aria-pressed="false"><i class="dot"></i>90℃</button>
+        <button class="level" data-level="3" aria-pressed="false"><svg class="lock" id="adultLock"><use href="#i-lock"/></svg><i class="dot"></i>100℃</button>
+    </div>
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+</div>
+</header>
+<main class="game">
+<section class="pane" id="pane-card">
+    <div class="mode-meta"><span>ESCALATOR / 01</span><b class="turn-label">A 方的回合</b></div>
+    <div class="card-space">
+        <button class="playing-card" id="playingCard" aria-label="点击翻开扑克">
+            <div class="card-inner">
+                <div class="face card-back" aria-hidden="true">
+                    <span class="back-caption">轻触 · 翻开</span>
+                </div>
+                <div class="face card-front" id="cardFront" aria-hidden="true">
+                    <div class="card-corners">
+                        <span class="suit" id="cardRank">♠ A</span>
+                        <span class="card-category" id="cardCategory">真心话</span>
+                    </div>
+                    <div class="card-copy" id="cardCopy"></div>
+                    <div class="card-bottom" id="cardHint">想跳过，就换一张。</div>
+                </div>
+            </div>
+        </button>
+    </div>
+    <p class="card-helper">轻触翻牌 · 向上轻滑换牌</p>
+    <div class="actions">
+        <button class="action" id="cardNext">换一张</button>
+        <button class="action primary" id="cardDone" disabled>完成</button>
+    </div>
+</section>
+</main>
+</div>
+
+<div class="sheet-backdrop" id="settingsDialog" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="handle"></div>
+        <div class="sheet-head">
+            <h2 id="settingsTitle">设置</h2>
+            <button class="icon-button close" aria-label="关闭设置">✕</button>
+        </div>
+        <div class="sheet-section">
+            <div class="setting-row">
+                <div class="hint">完成每题 +5 Chemistry。自动升温开启时，到达阶段阈值会自动进入下一阶段。<br>成人阶段仍需双方确认。</div>
+                <button class="switch" id="autoToggle" aria-pressed="true">自动升温 · 开</button>
+            </div>
+        </div>
+        <div class="actions" style="margin-top:20px">
+            <button class="action full" id="resetSession">重新开局</button>
+        </div>
+    </section>
+</div>
+
+<div class="sheet-backdrop" id="consentDialog" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+        <div class="handle"></div>
+        <div class="sheet-head">
+            <h2 id="consentTitle">成人模式 (100℃)</h2>
+            <button class="icon-button close" aria-label="取消成人模式">✕</button>
+        </div>
+        <p class="consent-intro">由亲密偏好、吸引与氛围慢慢展开。<br>请把手机依次交给双方，各自确认。</p>
+        <button class="consent-button" id="consentA" aria-pressed="false"><span class="consent-badge">A</span><span><strong>A 方确认</strong><small>我已满 18 岁，清醒且自愿参与。</small></span></button>
+        <button class="consent-button" id="consentB" aria-pressed="false"><span class="consent-badge">B</span><span><strong>B 方确认</strong><small>我已满 18 岁，清醒且自愿参与。</small></span></button>
+        <p class="hint consent-foot">每次接触仍需当下同意。任何一方都可以换题、暂停或退出，无需解释，也不罚酒。</p>
+        <button class="action primary full" id="unlockAdult" disabled>双方确认后开启</button>
+    </section>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+const LEVELS = ['37℃ (微醺)', '70℃ (升温)', '90℃ (越界)', '100℃ (沸腾)'];
+
+// Custom 54-card "Heat Escalator" Deck organized by 4 levels
+const DECK = [
+    // Level 0: 37℃ - Spades
+    [
+        {suit: '♠️', rank: 'A', type: '真心话', text: '第一次对我产生强烈的生理冲动，是什么具体场景？'},
+        {suit: '♠️', rank: '2', type: '大冒险', text: '两人十指紧扣对视60秒，谁先眨眼或笑场，罚酒半杯。'},
+        {suit: '♠️', rank: '3', type: '真心话', text: '你觉得我身上最好闻、最吸引你的部位是哪里？'},
+        {suit: '♠️', rank: '4', type: '大冒险', text: '喝一口酒，两人鼻尖贴鼻尖保持30秒，感受对方的呼吸。'},
+        {suit: '♠️', rank: '5', type: '真心话', text: '老实交代，有没有做过关于我的“春梦”？具体情节是什么？'},
+        {suit: '♠️', rank: '6', type: '大冒险', text: '亲吻我的手背，然后顺着手腕慢慢亲吻到手肘内侧。'},
+        {suit: '♠️', rank: '7', type: '真心话', text: '你最喜欢我穿哪一套内衣/睡衣？为什么？'},
+        {suit: '♠️', rank: '8', type: '大冒险', text: '隔着衣服，在对方腰际线和后腰处轻抚一分钟。'},
+        {suit: '♠️', rank: '9', type: '真心话', text: '喜欢开灯做，还是关灯做？'},
+        {suit: '♠️', rank: '10', type: '大冒险', text: '凑到我耳边，用你最性感的声线，读一段随便什么文字。'},
+        {suit: '♠️', rank: 'J', type: '真心话', text: '我身上哪一种无意识的小习惯或表情，最能挑逗到你的神经？'},
+        {suit: '♠️', rank: 'Q', type: '大冒险', text: '坐在对方的腿上，保持这个姿势喝完一杯酒。'},
+        {suit: '♠️', rank: 'K', type: '特权牌', text: '免死金牌。今晚可无条件拒绝一次任何大冒险或真心话，免受惩罚。'}
+    ],
+    // Level 1: 70℃ - Hearts
+    [
+        {suit: '♥️', rank: 'A', type: '真心话', text: '喜欢在上面主导，还是在下面享受？'},
+        {suit: '♥️', rank: '2', type: '大冒险', text: '闭上眼睛，让对方用嘴唇在你脸上、颈部游走一分钟，绝对不能笑或躲。'},
+        {suit: '♥️', rank: '3', type: '真心话', text: '描述一个你曾在脑海中幻想过，但一直没好意思跟我提的场景。'},
+        {suit: '♥️', rank: '4', type: '大冒险', text: '咬住一颗冰块（或软糖），嘴对嘴传给对方，过程中必须有舌头接触。'},
+        {suit: '♥️', rank: '5', type: '真心话', text: '在户外或公共场合有过大胆的想法吗？如果有，最想在哪里？'},
+        {suit: '♥️', rank: '6', type: '大冒险', text: '绝对不准用手，只能用牙齿，帮对方脱掉一件衣物。'},
+        {suit: '♥️', rank: '7', type: '真心话', text: '我的哪一种叫声、喘息或表情，最能让你瞬间失去理智？'},
+        {suit: '♥️', rank: '8', type: '大冒险', text: '在对方的锁骨窝里倒一点酒，然后不用手，直接用嘴舔干净。'},
+        {suit: '♥️', rank: '9', type: '真心话', text: '幻想过角色扮演吗？你最想看我扮成什么角色？'},
+        {suit: '♥️', rank: '10', type: '大冒险', text: '蒙上对方眼睛，在对方身体三个不同的非敏感部位留下深深的吻痕。'},
+        {suit: '♥️', rank: 'J', type: '真心话', text: '你喜欢动作粗暴野蛮一点，还是温柔缱绻一点？'},
+        {suit: '♥️', rank: 'Q', type: '大冒险', text: '解开对方的内衣扣子或拉下裤子拉链，然后立刻停手退开，保持五分钟不准碰对方。'},
+        {suit: '♥️', rank: 'K', type: '特权牌', text: '剥夺牌。可直接命令对方立刻脱掉指定的任意一件衣物。'}
+    ],
+    // Level 2: 90℃ - Clubs
+    [
+        {suit: '♣️', rank: 'A', type: '真心话', text: '诚实告诉我，你身体最敏感、一碰就受不了的三个点在哪里？'},
+        {suit: '♣️', rank: '2', type: '大冒险', text: '用舌尖细细描摹对方的耳朵轮廓，并向耳道里轻轻吹气。'},
+        {suit: '♣️', rank: '3', type: '真心话', text: '上一次你一个人自己解决生理需求时，脑子里想的是什么画面？'},
+        {suit: '♣️', rank: '4', type: '大冒险', text: '隔着最后的一层内衣，挑逗对方最敏感的部位一分钟，直到对方喘息。'},
+        {suit: '♣️', rank: '5', type: '真心话', text: '你能接受轻微的束缚（如绑手）、打屁股或其他轻微BDSM元素吗？'},
+        {suit: '♣️', rank: '6', type: '大冒险', text: '让对方平躺，用你的头发或羽毛、丝织物，缓慢扫过对方的大腿内侧和腹部。'},
+        {suit: '♣️', rank: '7', type: '真心话', text: '我们做过最爽的一次是哪次？当时是什么姿势？'},
+        {suit: '♣️', rank: '8', type: '大冒险', text: '纯用嘴和舌头，在对方胸前或大腿根部留下一个明显的“草莓”印记。'},
+        {suit: '♣️', rank: '9', type: '真心话', text: '你有没有想过在我们的运动中加入成人玩具？想用哪种？'},
+        {suit: '♣️', rank: '10', type: '大冒险', text: '把手伸进对方内衣里抚摸两分钟，对方必须咬住嘴唇，绝对不准发出声音，出声就罚酒。'},
+        {suit: '♣️', rank: 'J', type: '真心话', text: '大胆评价一下我的床上技术，告诉我哪里还能让你更爽？'},
+        {suit: '♣️', rank: 'Q', type: '大冒险', text: '口中含一口温热的酒或水，慢慢舔舐对方肚脐及以下一寸的位置，直到液体咽下。'},
+        {suit: '♣️', rank: 'K', type: '特权牌', text: '操控牌。你成为接下来的主导者，可命令对方摆出任意羞耻的姿势维持一分钟供你欣赏。'}
+    ],
+    // Level 3: 100℃ - Diamonds & Jokers
+    [
+        {suit: '♦️', rank: 'A', type: '大冒险', text: '别废话，直接褪去双方最后的衣物，坦诚相见，紧紧拥抱一分钟。'},
+        {suit: '♦️', rank: '2', type: '大冒险', text: '采用女上位（或跨坐姿势），身体紧贴，进行3分钟的法式深吻。'},
+        {suit: '♦️', rank: '3', type: '真心话', text: '看着我的眼睛，用最直白的词汇，说出你现在最想让我进入/含住哪里。'},
+        {suit: '♦️', rank: '4', type: '大冒险', text: '为对方进行口部服务（或手部），直到对方发出无法克制的喘息声为止。'},
+        {suit: '♦️', rank: '5', type: '大冒险', text: '换一个我们平时绝对不会用、或者觉得很难的姿势，尝试进行五分钟。'},
+        {suit: '♦️', rank: '6', type: '大冒险', text: '双方不准用手，仅靠大腿和身体的摩擦，挑逗对方的私密部位直到有感觉。'},
+        {suit: '♦️', rank: '7', type: '大冒险', text: '蒙住对方的眼睛，用冰块在对方私处边缘缓慢游走，对方不准躲。'},
+        {suit: '♦️', rank: '8', type: '真心话', text: '用平时绝对说不出口的“脏话/粗语”，形容一下你现在有多想要。'},
+        {suit: '♦️', rank: '9', type: '大冒险', text: '互相用手帮对方挑逗，看谁先受不了求饶。'},
+        {suit: '♦️', rank: '10', type: '大冒险', text: '正式结合进入，但在前三分钟内绝对不准动，只能静静感受彼此的温度和心跳。'},
+        {suit: '♦️', rank: 'J', type: '大冒险', text: '转移阵地，对着一面镜子做，强迫对方看着镜子里的自己。'},
+        {suit: '♦️', rank: 'Q', type: '大冒险', text: '在对方最舒服、快要顶点的时候，突然拔出（或停止动作），让对方求你继续。'},
+        {suit: '♦️', rank: 'K', type: '特权牌', text: '终极冲刺。立刻抛弃所有规则和卡牌，以你们最喜欢的姿势，尽情享受高潮！'},
+        {suit: '🃏', rank: '大王', type: '隐藏游戏', text: '绝对支配。戴上眼罩束缚双手。在接下来20分钟内，主导者可以对被动方做任何事，被动方不能反抗且必须加上尊称。'},
+        {suit: '🃏', rank: '小王', type: '隐藏游戏', text: '寸止挑战。接下来30分钟内进行任何互动，但绝对禁止达到高潮。谁先破功谁输，输家需答应赢家一个最羞耻的要求。'}
+    ]
+];
+
+const state = {
+    level: 0,
+    chem: 0,
+    round: 1,
+    adult: false,
+    consent: [false, false],
+    auto: true,
+    cardBusy: false,
+    cardRevealed: false,
+    card: null,
+    played: [[], [], [], []] // Track played card indices per level
+};
+
+let toastTimer, cardTimer, modal = null, lastFocus = null, scrollYBefore = 0;
+
+function random(n) { return Math.floor(Math.random() * n); }
+
+function toast(msg) {
+    clearTimeout(toastTimer);
+    $('toast').textContent = msg;
+    $('toast').hidden = false;
+    toastTimer = setTimeout(() => $('toast').hidden = true, 2700);
+}
+
+function updateHeader() {
+    $('round').textContent = String(state.round).padStart(2, '0');
+    $('chemValue').textContent = String(state.chem).padStart(2, '0') + ' / 100';
+    $('progress').setAttribute('aria-valuenow', state.chem);
+    $('progressFill').style.transform = `scaleX(${state.chem / 100})`;
+    
+    $$('.level').forEach((b, i) => b.setAttribute('aria-pressed', i === state.level));
+    $$('.turn-label').forEach(e => e.textContent = (state.round % 2 ? 'A' : 'B') + ' 方的回合');
+    $('adultLock').toggleAttribute('hidden', state.adult);
+    
+    $('autoToggle').textContent = '自动升温 · ' + (state.auto ? '开' : '关');
+    $('autoToggle').setAttribute('aria-pressed', state.auto);
+}
+
+function drawCard(level) {
+    const deck = DECK[level];
+    let available = [];
+    for (let i = 0; i < deck.length; i++) {
+        if (!state.played[level].includes(i)) available.push(i);
+    }
+    
+    // Shuffle if all cards in level played
+    if (available.length === 0) {
+        state.played[level] = [];
+        for (let i = 0; i < deck.length; i++) available.push(i);
+        toast(`第 ${level + 1} 阶段牌堆已洗牌`);
+    }
+    
+    const pickedIndex = available[random(available.length)];
+    state.played[level].push(pickedIndex);
+    return deck[pickedIndex];
+}
+
+function renderCard() {
+    const c = state.card;
+    $('playingCard').classList.toggle('flipped', state.cardRevealed);
+    $('cardFront').setAttribute('aria-hidden', !state.cardRevealed);
+    
+    $('cardRank').textContent = c ? `${c.suit} ${c.rank}` : '';
+    $('cardCategory').textContent = c ? c.type : '';
+    $('cardCopy').textContent = c ? c.text : '';
+    
+    if (c) {
+        if (c.type === '特权牌' || c.type === '隐藏游戏') {
+            $('cardCategory').style.color = '#c79c5c';
+            $('cardCategory').style.borderColor = '#c79c5c';
+        } else {
+            $('cardCategory').style.color = '#71534f';
+            $('cardCategory').style.borderColor = '#71534f';
+        }
+    }
+    
+    $('cardDone').disabled = !state.cardRevealed || !c || state.cardBusy;
+    $('cardNext').disabled = state.cardBusy;
+}
+
+function revealCard() {
+    if (state.cardBusy || modal || state.cardRevealed) return;
+    state.card = drawCard(state.level);
+    state.cardRevealed = true;
+    renderCard();
+}
+
+function nextCard() {
+    if (state.cardBusy || modal) return;
+    state.cardBusy = true;
+    state.cardRevealed = false;
+    renderCard();
+    cardTimer = setTimeout(() => {
+        state.card = drawCard(state.level);
+        state.cardBusy = false;
+        renderCard();
+    }, 570);
+}
+
+function clearPrompts() {
+    state.card = null;
+    state.cardRevealed = false;
+    renderCard();
+}
+
+function completeCard() {
+    if (state.cardBusy || modal || !state.cardRevealed) return;
+    
+    state.chem = Math.min(100, state.chem + 5);
+    state.round++;
+    
+    let notice = '已完成 · Chemistry +5';
+    if (state.chem === 100) notice = '已到达极致沸腾状态！';
+    
+    if (state.auto) {
+        const threshold = Math.min(3, Math.floor(state.chem / 25));
+        if (threshold > state.level) {
+            if (threshold === 3 && !state.adult) {
+                if (state.chem === 75) notice = '即将沸腾 · 请点击顶部 100℃ 确认开启成人模式';
+            } else {
+                state.level = threshold;
+                clearPrompts();
+                notice = `已进入 ${LEVELS[state.level]} · 温度升高`;
+            }
+        }
+    }
+    
+    updateHeader();
+    renderCard();
+    toast(notice);
+    
+    // Automatically draw next card face down
+    state.cardRevealed = false;
+    renderCard();
+}
+
+function setLevel(level, manual = true) {
+    if (level === 3 && !state.adult) {
+        openConsent();
+        return;
+    }
+    if (manual && level > state.level + 1) {
+        toast('请循序渐进，先体验上一阶段');
+        return;
+    }
+    state.level = level;
+    if (manual) state.auto = false;
+    clearPrompts();
+    updateHeader();
+}
+
+function openModal(id) {
+    if (modal) closeModal();
+    lastFocus = document.activeElement;
+    modal = $(id);
+    scrollYBefore = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = -scrollYBefore + 'px';
+    document.body.style.width = '100%';
+    $('app').inert = true;
+    modal.hidden = false;
+}
+
+function closeModal() {
+    if (!modal) return;
+    modal.hidden = true;
+    modal = null;
+    $('app').inert = false;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, scrollYBefore);
+    if (lastFocus) lastFocus.focus({preventScroll: true});
+}
+
+function openConsent() {
+    state.consent = [false, false];
+    ['consentA', 'consentB'].forEach(id => $(id).setAttribute('aria-pressed', 'false'));
+    $('unlockAdult').disabled = true;
+    $('unlockAdult').textContent = '双方确认后开启';
+    openModal('consentDialog');
+}
+
+function resetSession() {
+    state.chem = 0;
+    state.round = 1;
+    state.level = 0;
+    state.adult = false;
+    state.auto = true;
+    state.consent = [false, false];
+    state.played = [[], [], [], []];
+    clearPrompts();
+    updateHeader();
+    closeModal();
+    toast('新的一局，从 37℃ 微醺开始');
+}
+
+$('playingCard').addEventListener('click', revealCard);
+$('cardNext').addEventListener('click', nextCard);
+$('cardDone').addEventListener('click', completeCard);
+
+$$('.level').forEach(b => b.addEventListener('click', () => setLevel(Number(b.dataset.level))));
+$('settingsOpen').addEventListener('click', () => openModal('settingsDialog'));
+$('autoToggle').addEventListener('click', () => { state.auto = !state.auto; updateHeader(); });
+$('resetSession').addEventListener('click', resetSession);
+
+$$('.sheet-backdrop').forEach(d => {
+    d.addEventListener('click', e => { if (e.target === d) closeModal(); });
+    d.querySelector('.close').addEventListener('click', () => closeModal());
+});
+
+['consentA', 'consentB'].forEach((id, i) => {
+    $(id).addEventListener('click', () => {
+        state.consent[i] = !state.consent[i];
+        $(id).setAttribute('aria-pressed', state.consent[i]);
+        const yes = state.consent.every(Boolean);
+        $('unlockAdult').disabled = !yes;
+        $('unlockAdult').textContent = yes ? '开启成人模式 (100℃)' : '等待另一方确认';
+    });
+});
+
+$('unlockAdult').addEventListener('click', () => {
+    if (!state.consent.every(Boolean)) return;
+    state.adult = true;
+    state.level = 3;
+    state.auto = false;
+    closeModal();
+    clearPrompts();
+    updateHeader();
+    toast('100℃ 沸腾已开启，抛开拘束吧');
+});
+
+let touchStart = null, suppressClick = false;
+$('playingCard').addEventListener('touchstart', e => {
+    if (e.touches.length === 1) touchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+}, {passive: true});
+$('playingCard').addEventListener('touchend', e => {
+    if (!touchStart) return;
+    const dy = e.changedTouches[0].clientY - touchStart.y;
+    const dx = e.changedTouches[0].clientX - touchStart.x;
+    touchStart = null;
+    if (dy < -45 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+        suppressClick = true;
+        nextCard();
+        setTimeout(() => suppressClick = false, 600);
+    }
+}, {passive: true});
+$('playingCard').addEventListener('click', e => {
+    if (suppressClick) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }
+}, true);
+
+// Initialize Game
+updateHeader();
+</script>
+</body>
+</html>
